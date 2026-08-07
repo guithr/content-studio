@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useActionState, useEffect, useMemo, useState } from 'react'
 import { contentService } from '../../api/content-service'
 import type { Content, ContentStatus } from '../../api/schemas'
 import { Button } from '../../components/ui/button'
@@ -28,6 +28,16 @@ import {
 type ContentFormProps = {
   content: Content
   onSave: (content: Content) => void
+}
+
+type FormState = {
+  message: string | null
+  error: string | null
+}
+
+const initialFormState: FormState = {
+  message: null,
+  error: null,
 }
 
 const statusOptions: { value: ContentStatus; label: string }[] = [
@@ -66,9 +76,10 @@ export function ContentForm({ content, onSave }: ContentFormProps) {
   const [body, setBody] = useState(content.body)
   const [tags, setTags] = useState(content.tags.join(', '))
   const [status, setStatus] = useState<ContentStatus>(content.status)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [formState, formAction, isPending] = useActionState<FormState>(
+    saveAction,
+    initialFormState
+  )
 
   const originalDraftSnapshot = useMemo(
     () =>
@@ -160,12 +171,7 @@ export function ContentForm({ content, onSave }: ContentFormProps) {
     setDraftToRestore(null)
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setIsSubmitting(true)
-    setError(null)
-    setMessage(null)
-
+  async function saveAction() {
     try {
       const updated = await contentService.updateContent({
         id: content.id,
@@ -176,13 +182,16 @@ export function ContentForm({ content, onSave }: ContentFormProps) {
         tags: preview.tags,
       })
       onSave(updated)
-      setMessage('Conteúdo salvo com sucesso.')
+      return {
+        message: 'Conteúdo salvo com sucesso.',
+        error: null,
+      }
     } catch (cause) {
-      setError(
-        cause instanceof Error ? cause.message : 'Não foi possível salvar.'
-      )
-    } finally {
-      setIsSubmitting(false)
+      return {
+        message: null,
+        error:
+          cause instanceof Error ? cause.message : 'Não foi possível salvar.',
+      }
     }
   }
 
@@ -247,7 +256,7 @@ export function ContentForm({ content, onSave }: ContentFormProps) {
                   </div>
                 </div>
               )}
-              <form className="space-y-4" onSubmit={handleSubmit}>
+              <form className="space-y-4" action={formAction}>
                 <label className="block space-y-2">
                   <span className="text-sm font-medium">Título</span>
                   <Input
@@ -309,13 +318,19 @@ export function ContentForm({ content, onSave }: ContentFormProps) {
                   className="flex min-h-8 flex-wrap items-center justify-between gap-3 pt-1"
                 >
                   <p className="text-sm" aria-live="polite">
-                    {error && <span className="text-destructive">{error}</span>}
-                    {message && (
-                      <span className="text-emerald-700">{message}</span>
+                    {formState.error && (
+                      <span className="text-destructive">
+                        {formState.error}
+                      </span>
+                    )}
+                    {formState.message && (
+                      <span className="text-emerald-700">
+                        {formState.message}
+                      </span>
                     )}
                   </p>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Salvando...' : 'Salvar'}
+                  <Button type="submit" disabled={isPending}>
+                    {isPending ? 'Salvando...' : 'Salvar'}
                   </Button>
                 </div>
               </form>
