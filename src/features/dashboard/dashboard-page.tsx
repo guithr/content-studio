@@ -86,52 +86,55 @@ export function DashboardPage() {
   ).length
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="font-mono text-xs uppercase tracking-[0.22em] text-studio-muted">
-            Dashboard
-          </p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight">
-            Visão geral
-          </h2>
-        </div>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-4">
-        <SummaryCard label="Em revisão" value={reviewCount} />
-        <SummaryCard label="Feedbacks abertos" value={openFeedbackCount} />
-        <SummaryCard label="Rascunhos" value={draftCount} />
-        <SummaryCard label="Publicados" value={publishedCount} />
-      </div>
-
-      {error ? (
-        <ErrorState message={error} onRetry={handleRetry} />
-      ) : isLoading ? (
-        <Skeleton className="h-64 w-full" />
-      ) : priorityContents.length > 0 ? (
-        <section className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="text-lg font-semibold">Prioridades</h3>
-            <Button
-              render={<Link to="/contents" />}
-              nativeButton={false}
-              variant="outline"
-              size="sm"
-            >
-              Abrir biblioteca
-            </Button>
+    <>
+      <title>Content Studio - Dashboard</title>
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.22em] text-studio-muted">
+              Dashboard
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+              Visão geral
+            </h2>
           </div>
-          <ContentList contents={priorityContents} />
-        </section>
-      ) : (
-        <Card className="border-studio-border bg-studio-card/85">
-          <CardContent className="p-4 text-sm text-studio-muted">
-            Nenhuma prioridade editorial no momento.
-          </CardContent>
-        </Card>
-      )}
-    </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-4">
+          <SummaryCard label="Em revisão" value={reviewCount} />
+          <SummaryCard label="Feedbacks abertos" value={openFeedbackCount} />
+          <SummaryCard label="Rascunhos" value={draftCount} />
+          <SummaryCard label="Publicados" value={publishedCount} />
+        </div>
+
+        {error ? (
+          <ErrorState message={error} onRetry={handleRetry} />
+        ) : isLoading ? (
+          <Skeleton className="h-64 w-full" />
+        ) : priorityContents.length > 0 ? (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-lg font-semibold">Prioridades</h3>
+              <Button
+                render={<Link to="/contents" />}
+                nativeButton={false}
+                variant="outline"
+                size="sm"
+              >
+                Abrir biblioteca
+              </Button>
+            </div>
+            <ContentList contents={priorityContents} />
+          </section>
+        ) : (
+          <Card className="border-studio-border bg-studio-card/85">
+            <CardContent className="p-4 text-sm text-studio-muted">
+              Nenhuma prioridade editorial no momento.
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </>
   )
 }
 
